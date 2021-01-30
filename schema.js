@@ -1,5 +1,5 @@
 const graphql = require('graphql')
-const { GraphQLObjectType, GraphQLString, GraphQLSchema, GraphQLList } = graphql
+const { GraphQLObjectType, GraphQLString, GraphQLSchema, GraphQLList, GraphQLNonNull } = graphql
 
 const categories = [
   { id: '1', name: '图书' },
@@ -92,8 +92,54 @@ const RootQuery = new GraphQLObjectType({
   }
 })
 
+
+
+const RootMutation = new GraphQLObjectType({
+  name: 'RootMutation',
+  fields: {
+    // 添加分类
+    addCategory: {
+      type: Category,
+      args: {
+        name: { type: new GraphQLNonNull(GraphQLString) }
+      },
+      resolve (parent, args) {
+        const obj = {
+          id: categories.length + 1,
+          name: args.name || ''
+        }
+        categories.push(obj)
+        return obj
+      }
+    },
+    // 添加产品
+    addProduct: {
+      type: Product,
+      args: {
+        name: { type: new GraphQLNonNull(GraphQLString) },
+        category: { type: new GraphQLNonNull(GraphQLString) }
+      },
+      resolve (parent, args) {
+        const obj = {
+          id: products.length + 1,
+          name: args.name || '',
+          category: args.category || ''
+        }
+        products.push(obj)
+        return obj
+      }
+    }
+  }
+})
+
+// 测试 query{ getCategoryList{ id, name } }
+// 测试 query{ getCategory(id: "1"){ id, name } }
+// 测试 mutation{ addCategory(name: "可乐") { id, name } }
+// 测试 mutation{ addProduct(name: "非常可乐", category: "category") { id, name } }
+
 module.exports = new GraphQLSchema({
-  query: RootQuery
+  query: RootQuery,
+  mutation: RootMutation
 })
 
  
